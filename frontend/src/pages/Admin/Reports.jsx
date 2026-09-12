@@ -125,7 +125,7 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-sky-50/50 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       <DashboardHeader
         title="Reports"
         description="View project progress, team performance and system reports."
@@ -134,88 +134,91 @@ export default function Reports() {
             <Button
               variant="outline"
               onClick={() => handleExport("CSV")}
+              className="gap-2 border-slate-200 bg-white text-slate-700 hover:bg-sky-50 hover:text-sky-700 h-11"
             >
-              <Download />
+              <Download size={16} />
               CSV
             </Button>
 
             <Button
               onClick={() => handleExport("PDF")}
+              className="gap-2 bg-black hover:bg-zinc-900 text-white font-semibold h-11 shadow-md"
             >
-              <FileText />
+              <FileText size={16} />
               Export Report
             </Button>
           </div>
         }
       />
 
+      {/* Top Metric Cards Grid */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-primary/10 p-3 text-primary">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <FolderKanban size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 Total Projects
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {totalProjects}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-blue-100 p-3 text-blue-600">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <BarChart3 size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 Average Progress
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {averageProgress}%
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-green-100 p-3 text-green-600">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <CheckCircle2 size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 High Progress
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {completedProjects}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-purple-100 p-3 text-purple-600">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <Users size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 Active Teams
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {activeTeams}
               </p>
             </div>
@@ -223,17 +226,18 @@ export default function Reports() {
         </Card>
       </div>
 
+      {/* Analytics Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Project Status Overview</CardTitle>
+        <Card className="border border-sky-100 bg-white shadow-xl">
+          <CardHeader className="pb-4 border-b border-slate-100">
+            <CardTitle className="text-lg text-slate-900">Project Status Overview</CardTitle>
 
-            <CardDescription>
+            <CardDescription className="text-slate-500">
               Distribution of projects by their current status.
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-6 pt-6">
             {Object.entries(statusCount).map(
               ([status, count]) => {
                 const percentage = Math.round(
@@ -241,18 +245,18 @@ export default function Reports() {
                 )
 
                 return (
-                  <div key={status}>
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-medium">
+                  <div key={status} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-semibold text-slate-700">
                         {status}
                       </span>
 
-                      <span className="text-sm text-muted-foreground">
-                        {count} Projects
+                      <span className="text-slate-500 font-medium">
+                        {count} Projects ({percentage}%)
                       </span>
                     </div>
 
-                    <Progress value={percentage} />
+                    <Progress value={percentage} className="h-2.5 bg-sky-50 border border-sky-100" />
                   </div>
                 )
               }
@@ -260,44 +264,44 @@ export default function Reports() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>System Summary</CardTitle>
+        <Card className="border border-sky-100 bg-white shadow-xl">
+          <CardHeader className="pb-4 border-b border-slate-100">
+            <CardTitle className="text-lg text-slate-900">System Summary</CardTitle>
 
-            <CardDescription>
+            <CardDescription className="text-slate-500">
               Overall performance of the project monitoring system.
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-5">
-            <div className="rounded-lg border p-4">
-              <p className="text-sm text-muted-foreground">
+          <CardContent className="space-y-6 pt-6">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                 Overall Project Progress
               </p>
 
               <div className="mt-2 flex items-end justify-between">
-                <p className="text-3xl font-bold">
+                <p className="text-3xl font-bold text-slate-900">
                   {averageProgress}%
                 </p>
 
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="bg-sky-50 text-sky-700 border border-sky-200">
                   Average
                 </Badge>
               </div>
 
               <Progress
                 value={averageProgress}
-                className="mt-4"
+                className="mt-4 h-2.5 bg-white border border-sky-100"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                   Projects Reviewed
                 </p>
 
-                <p className="mt-2 text-2xl font-bold">
+                <p className="mt-1 text-2xl font-bold text-slate-900">
                   {
                     projects.filter(
                       (project) =>
@@ -308,12 +312,12 @@ export default function Reports() {
                 </p>
               </div>
 
-              <div className="rounded-lg border p-4">
-                <p className="text-sm text-muted-foreground">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                   Mentors Assigned
                 </p>
 
-                <p className="mt-2 text-2xl font-bold">
+                <p className="mt-1 text-2xl font-bold text-slate-900">
                   {
                     projects.filter(
                       (project) =>
@@ -327,25 +331,26 @@ export default function Reports() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Performance Report</CardTitle>
+      {/* Project Performance Report Table Card */}
+      <Card className="border border-sky-100 bg-white shadow-xl">
+        <CardHeader className="pb-4 border-b border-slate-100">
+          <CardTitle className="text-lg text-slate-900">Project Performance Report</CardTitle>
 
-          <CardDescription>
+          <CardDescription className="text-slate-500">
             Detailed overview of every project and its progress.
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          <div className="relative mb-5 max-w-md">
+        <CardContent className="pt-6">
+          <div className="relative mb-6 max-w-md">
             <Search
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
             <Input
               placeholder="Search reports..."
-              className="pl-10"
+              className="pl-10 h-11 rounded-xl border border-slate-200 bg-white text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -354,27 +359,27 @@ export default function Reports() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Team</TableHead>
-                  <TableHead>Mentor</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Status</TableHead>
+                <TableRow className="border-slate-100">
+                  <TableHead className="text-slate-600 font-semibold">Project</TableHead>
+                  <TableHead className="text-slate-600 font-semibold">Team</TableHead>
+                  <TableHead className="text-slate-600 font-semibold">Mentor</TableHead>
+                  <TableHead className="text-slate-600 font-semibold">Progress</TableHead>
+                  <TableHead className="text-slate-600 font-semibold">Status</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 {filteredProjects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell className="font-medium">
+                  <TableRow key={project.id} className="border-slate-100 hover:bg-sky-50/30">
+                    <TableCell className="font-bold text-slate-900">
                       {project.title}
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell className="font-medium text-slate-700">
                       {project.team}
                     </TableCell>
 
-                    <TableCell>
+                    <TableCell className="text-slate-600 font-medium">
                       {project.mentor}
                     </TableCell>
 
@@ -382,10 +387,10 @@ export default function Reports() {
                       <div className="flex items-center gap-3">
                         <Progress
                           value={project.progress}
-                          className="w-20"
+                          className="w-20 h-2.5 bg-sky-50 border border-sky-100"
                         />
 
-                        <span className="text-sm">
+                        <span className="text-sm font-semibold text-slate-700">
                           {project.progress}%
                         </span>
                       </div>
@@ -398,6 +403,7 @@ export default function Reports() {
                             ? "default"
                             : "secondary"
                         }
+                        className={project.status === "Approved" ? "bg-emerald-600 text-white" : "bg-sky-50 text-sky-700 border border-sky-200"}
                       >
                         {project.status}
                       </Badge>
@@ -409,7 +415,7 @@ export default function Reports() {
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="h-32 text-center text-muted-foreground"
+                      className="h-32 text-center text-slate-400 font-medium"
                     >
                       No reports found.
                     </TableCell>

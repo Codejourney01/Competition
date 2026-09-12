@@ -133,61 +133,62 @@ export default function Feedback() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-sky-50/50 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       <DashboardHeader
         title="Feedback"
         description="Provide feedback and suggestions to your assigned student teams."
       />
 
+      {/* Top Metric Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-primary/10 p-3 text-primary">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <MessageSquare size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 Total Feedback
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {feedbacks.length}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-blue-100 p-3 text-blue-600">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <FolderKanban size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 Assigned Projects
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {projects.length}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-orange-100 p-3 text-orange-600">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <Clock size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 High Priority
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {
                   feedbacks.filter(
                     (feedback) =>
@@ -199,18 +200,18 @@ export default function Feedback() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-lg bg-green-100 p-3 text-green-600">
+            <div className="rounded-xl bg-sky-50 p-3 text-sky-600 border border-sky-200">
               <CheckCircle2 size={22} />
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-500 font-medium">
                 Teams Covered
               </p>
 
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-slate-900 mt-1">
                 {
                   new Set(
                     feedbacks.map(
@@ -224,30 +225,31 @@ export default function Feedback() {
         </Card>
       </div>
 
+      {/* Send Feedback & Selected Project Grid */}
       <div className="grid gap-6 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Send Feedback</CardTitle>
+        <Card className="xl:col-span-2 border border-sky-100 bg-white shadow-xl">
+          <CardHeader className="pb-4 border-b border-slate-100">
+            <CardTitle className="text-lg text-slate-900">Send Feedback</CardTitle>
 
-            <CardDescription>
+            <CardDescription className="text-slate-500">
               Select a project and provide your feedback to the team.
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-5 pt-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>Project</Label>
+                <Label className="text-sm font-semibold text-slate-700">Project</Label>
 
                 <Select
                   value={selectedProjectId}
                   onValueChange={setSelectedProjectId}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11 rounded-xl border border-slate-200 bg-white text-sm">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="rounded-xl border border-slate-200 bg-white shadow-lg">
                     {projects.map((project) => (
                       <SelectItem
                         key={project.id}
@@ -261,17 +263,17 @@ export default function Feedback() {
               </div>
 
               <div className="space-y-2">
-                <Label>Feedback Category</Label>
+                <Label className="text-sm font-semibold text-slate-700">Feedback Category</Label>
 
                 <Select
                   value={category}
                   onValueChange={setCategory}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11 rounded-xl border border-slate-200 bg-white text-sm">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent className="rounded-xl border border-slate-200 bg-white shadow-lg">
                     <SelectItem value="Technical">
                       Technical
                     </SelectItem>
@@ -297,17 +299,17 @@ export default function Feedback() {
             </div>
 
             <div className="space-y-2">
-              <Label>Priority</Label>
+              <Label className="text-sm font-semibold text-slate-700">Priority</Label>
 
               <Select
                 value={priority}
                 onValueChange={setPriority}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl border border-slate-200 bg-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
 
-                <SelectContent>
+                <SelectContent className="rounded-xl border border-slate-200 bg-white shadow-lg">
                   <SelectItem value="High">
                     High Priority
                   </SelectItem>
@@ -324,11 +326,11 @@ export default function Feedback() {
             </div>
 
             <div className="space-y-2">
-              <Label>Feedback Message</Label>
+              <Label className="text-sm font-semibold text-slate-700">Feedback Message</Label>
 
               <Textarea
                 placeholder="Write detailed feedback, suggestions and improvements..."
-                className="min-h-36"
+                className="min-h-36 rounded-xl border border-slate-200 bg-white p-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 resize-none"
                 value={message}
                 onChange={(e) =>
                   setMessage(e.target.value)
@@ -337,80 +339,80 @@ export default function Feedback() {
             </div>
 
             <Button
-              className="w-full"
+              className="w-full gap-2 bg-black hover:bg-zinc-900 text-white font-semibold h-11 shadow-md"
               onClick={handleSubmit}
             >
-              <Send />
+              <Send size={16} />
               Send Feedback
             </Button>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Selected Project</CardTitle>
+        <Card className="border border-sky-100 bg-white shadow-xl">
+          <CardHeader className="pb-4 border-b border-slate-100">
+            <CardTitle className="text-lg text-slate-900">Selected Project</CardTitle>
 
-            <CardDescription>
+            <CardDescription className="text-slate-500">
               Current project information.
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="pt-6">
             {!selectedProject ? (
-              <div className="flex min-h-52 flex-col items-center justify-center text-center">
-                <FolderKanban
-                  size={32}
-                  className="mb-3 text-muted-foreground"
-                />
+              <div className="flex min-h-64 flex-col items-center justify-center text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600 border border-sky-200 mb-3">
+                  <FolderKanban size={24} />
+                </div>
 
-                <p className="font-medium">
+                <p className="font-bold text-slate-900 text-sm">
                   No Project Selected
                 </p>
 
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-xs text-slate-500">
                   Select a project to view its details.
                 </p>
               </div>
             ) : (
               <div className="space-y-5">
                 <div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                     Project
                   </p>
 
-                  <p className="font-semibold">
+                  <p className="font-bold text-slate-900 text-sm mt-0.5">
                     {selectedProject.title}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                     Team
                   </p>
 
-                  <p className="font-semibold">
+                  <p className="font-semibold text-slate-800 text-sm mt-0.5">
                     {selectedProject.team}
                   </p>
                 </div>
 
                 <div>
-                  <div className="mb-2 flex justify-between">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="mb-2 flex justify-between items-center">
+                    <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
                       Progress
                     </p>
 
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-bold text-sky-600">
                       {selectedProject.progress}%
                     </p>
                   </div>
 
                   <Progress
                     value={selectedProject.progress}
+                    className="h-2.5 bg-sky-50 border border-sky-100"
                   />
                 </div>
 
                 <div>
-                  <p className="mb-3 text-sm text-muted-foreground">
+                  <p className="mb-2.5 text-xs text-slate-400 uppercase tracking-wider font-semibold">
                     Team Members
                   </p>
 
@@ -419,13 +421,13 @@ export default function Feedback() {
                       (student) => (
                         <div
                           key={student}
-                          className="flex items-center gap-3 rounded-lg border p-3"
+                          className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-3 shadow-2xs"
                         >
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-50 text-xs font-bold text-sky-600 border border-sky-200">
                             {student.charAt(0)}
                           </div>
 
-                          <span className="font-medium">
+                          <span className="font-semibold text-slate-800 text-sm">
                             {student}
                           </span>
                         </div>
@@ -439,25 +441,26 @@ export default function Feedback() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Feedback History</CardTitle>
+      {/* Feedback History Section */}
+      <Card className="border border-sky-100 bg-white shadow-xl">
+        <CardHeader className="pb-4 border-b border-slate-100">
+          <CardTitle className="text-lg text-slate-900">Feedback History</CardTitle>
 
-          <CardDescription>
+          <CardDescription className="text-slate-500">
             View all feedback previously provided to student teams.
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          <div className="relative mb-5 max-w-md">
+        <CardContent className="pt-6">
+          <div className="relative mb-6 max-w-md">
             <Search
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
             <Input
               placeholder="Search feedback..."
-              className="pl-10"
+              className="pl-10 h-11 rounded-xl border border-slate-200 bg-white text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -467,16 +470,16 @@ export default function Feedback() {
             {filteredFeedbacks.map((feedback) => (
               <div
                 key={feedback.id}
-                className="rounded-lg border p-4"
+                className="rounded-xl border border-slate-200 bg-white p-5 shadow-2xs transition-all hover:border-sky-200"
               >
-                <div className="flex flex-col justify-between gap-4 sm:flex-row">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <p className="font-bold text-slate-900 text-base">
                         {feedback.project}
                       </p>
 
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="bg-sky-50 text-sky-700 border border-sky-200 font-medium">
                         {feedback.category}
                       </Badge>
 
@@ -484,16 +487,18 @@ export default function Feedback() {
                         variant={getPriorityVariant(
                           feedback.priority
                         )}
+                        className={feedback.priority === "High" ? "bg-rose-500 text-white" : ""}
                       >
-                        {feedback.priority}
+                        {feedback.priority} Priority
                       </Badge>
                     </div>
 
-                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">
                       {feedback.message}
                     </p>
 
-                    <p className="mt-3 text-xs text-muted-foreground">
+                    <p className="mt-3 text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                      <Clock size={14} />
                       {feedback.date}
                     </p>
                   </div>
@@ -504,15 +509,16 @@ export default function Feedback() {
                     onClick={() =>
                       deleteFeedback(feedback.id)
                     }
+                    className="h-9 w-9 text-slate-400 hover:text-rose-600 hover:bg-rose-50 shrink-0"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={17} />
                   </Button>
                 </div>
               </div>
             ))}
 
             {filteredFeedbacks.length === 0 && (
-              <div className="py-12 text-center text-muted-foreground">
+              <div className="py-12 text-center text-slate-400 text-sm font-medium">
                 No feedback found.
               </div>
             )}

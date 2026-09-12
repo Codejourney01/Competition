@@ -3,19 +3,19 @@ export default function ProgressBar({
   showPercentage = true,
 }) {
   return (
-    <div className="w-full">
+    <div className="w-full text-card-foreground">
       {showPercentage && (
         <div className="mb-2 flex justify-between text-sm">
-          <span className="text-gray-500">Progress</span>
-          <span className="font-semibold text-gray-800">
+          <span className="text-muted-foreground">Progress</span>
+          <span className="font-semibold text-foreground">
             {value}%
           </span>
         </div>
       )}
 
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
+      <div className="h-2.5 w-full overflow-hidden rounded-full bg-secondary">
         <div
-          className="h-full rounded-full bg-blue-600 transition-all duration-500"
+          className="h-full rounded-full bg-primary transition-all duration-500"
           style={{ width: `${value}%` }}
         />
       </div>

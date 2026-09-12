@@ -42,6 +42,7 @@ import { Label } from "@/components/ui/label"
 export default function Teams() {
   const [search, setSearch] = useState("")
   const [selectedTeam, setSelectedTeam] = useState(null)
+  const [isOpen, setIsOpen] = useState(false)
 
   const [teams, setTeams] = useState([
     {
@@ -132,9 +133,9 @@ export default function Teams() {
     e.preventDefault()
 
     if (
-      !newTeam.name ||
-      !newTeam.leader ||
-      !newTeam.project
+      !newTeam.name.trim() ||
+      !newTeam.leader.trim() ||
+      !newTeam.project.trim()
     ) {
       return
     }
@@ -156,6 +157,8 @@ export default function Teams() {
       leader: "",
       project: "",
     })
+
+    setIsOpen(false)
   }
 
   return (
@@ -164,7 +167,7 @@ export default function Teams() {
         title="Teams"
         description="Manage student teams and monitor their project assignments."
         action={
-          <Dialog>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button>
                 <UserPlus />

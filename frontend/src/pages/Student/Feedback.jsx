@@ -134,93 +134,70 @@ export default function Feedback() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-sky-50/50 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       <DashboardHeader
         title="Mentor Feedback"
         description="Review suggestions, improvement points and feedback shared by your mentor."
       />
 
+      {/* Top Metric Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="transition-shadow hover:shadow-md">
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-550 text-sky-600 bg-sky-50 border border-sky-200">
               <MessageSquare size={22} />
             </div>
-
             <div>
-              <p className="text-sm text-muted-foreground">
-                Total Feedback
-              </p>
-
-              <p className="mt-1 text-2xl font-bold">
-                {feedbacks.length}
-              </p>
+              <p className="text-sm text-slate-500 font-medium">Total Feedback</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{feedbacks.length}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="transition-shadow hover:shadow-md">
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-600 border border-sky-200">
               <FolderKanban size={22} />
             </div>
-
             <div>
-              <p className="text-sm text-muted-foreground">
-                Active Project
-              </p>
-
-              <p className="mt-1 text-lg font-bold">
-                SmartEdu Platform
-              </p>
+              <p className="text-sm text-slate-500 font-medium">Active Project</p>
+              <p className="mt-1 text-base font-bold text-slate-900 truncate max-w-[160px]">SmartEdu Platform</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="transition-shadow hover:shadow-md">
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-200">
               <BellRing size={22} />
             </div>
-
             <div>
-              <p className="text-sm text-muted-foreground">
-                Unread Feedback
-              </p>
-
-              <p className="mt-1 text-2xl font-bold">
-                {unreadCount}
-              </p>
+              <p className="text-sm text-slate-500 font-medium">Unread Feedback</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{unreadCount}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="transition-shadow hover:shadow-md">
+        <Card className="border border-sky-100 bg-white shadow-md shadow-sky-100/50 transition-all hover:shadow-lg">
           <CardContent className="flex items-center gap-4 p-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600 border border-rose-200">
               <AlertCircle size={22} />
             </div>
-
             <div>
-              <p className="text-sm text-muted-foreground">
-                High Priority
-              </p>
-
-              <p className="mt-1 text-2xl font-bold">
-                {highPriorityCount}
-              </p>
+              <p className="text-sm text-slate-500 font-medium">High Priority</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{highPriorityCount}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader className="pb-4">
+      {/* Filter and Search Bar Section */}
+      <Card className="border border-sky-100 bg-white shadow-xl">
+        <CardHeader className="pb-4 border-b border-slate-100">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <CardTitle>Feedback History</CardTitle>
-
-              <CardDescription className="mt-1">
+              <CardTitle className="text-lg text-slate-900">Feedback History</CardTitle>
+              <CardDescription className="mt-1 text-slate-500">
                 Stay updated with mentor suggestions and project improvement points.
               </CardDescription>
             </div>
@@ -229,53 +206,43 @@ export default function Feedback() {
               <Button
                 variant="outline"
                 onClick={markAllAsRead}
+                className="gap-2 border-sky-200 bg-sky-50/50 text-sky-700 hover:bg-sky-100"
               >
-                <CheckCircle2 />
+                <CheckCircle2 size={16} />
                 Mark All as Read
               </Button>
             )}
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <Search
                 size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
               />
-
               <Input
                 placeholder="Search feedback, category or mentor..."
-                className="pl-10"
+                className="pl-10 h-11 rounded-xl border border-slate-200 bg-white text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
             <div className="flex gap-3">
-              <div className="flex items-center gap-2">
-                <Filter
-                  size={18}
-                  className="text-muted-foreground"
-                />
-
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <Filter size={18} className="text-slate-400 hidden md:block" />
                 <Select
                   value={projectFilter}
                   onValueChange={setProjectFilter}
                 >
-                  <SelectTrigger className="w-full md:w-56">
+                  <SelectTrigger className="w-full md:w-56 h-11 rounded-xl border border-slate-200 bg-white text-sm">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="All">
-                      All Projects
-                    </SelectItem>
-
-                    <SelectItem value="SmartEdu Platform">
-                      SmartEdu Platform
-                    </SelectItem>
+                  <SelectContent className="rounded-xl border border-slate-200 bg-white shadow-lg">
+                    <SelectItem value="All">All Projects</SelectItem>
+                    <SelectItem value="SmartEdu Platform">SmartEdu Platform</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -284,14 +251,15 @@ export default function Feedback() {
         </CardContent>
       </Card>
 
+      {/* Feedback Feed List */}
       <div className="space-y-4">
         {filteredFeedbacks.map((feedback) => (
           <Card
             key={feedback.id}
-            className={`overflow-hidden transition-all hover:shadow-md ${
+            className={`overflow-hidden transition-all border shadow-md ${
               !feedback.read
-                ? "border-primary/40 bg-primary/[0.02]"
-                : ""
+                ? "border-sky-300 bg-sky-50/30"
+                : "border-sky-100 bg-white"
             }`}
           >
             <CardContent className="p-0">
@@ -299,10 +267,10 @@ export default function Feedback() {
                 <div className="flex flex-col justify-between gap-5 lg:flex-row">
                   <div className="flex flex-1 gap-4">
                     <div
-                      className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                      className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
                         feedback.read
-                          ? "bg-muted text-muted-foreground"
-                          : "bg-primary/10 text-primary"
+                          ? "bg-slate-100 text-slate-500 border-slate-200"
+                          : "bg-sky-50 text-sky-600 border-sky-200"
                       }`}
                     >
                       <MessageSquare size={19} />
@@ -310,11 +278,11 @@ export default function Feedback() {
 
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold">
+                        <h3 className="font-bold text-slate-900">
                           {feedback.project}
                         </h3>
 
-                        <Badge variant="secondary">
+                        <Badge variant="secondary" className="bg-slate-100 text-slate-700 border border-slate-200">
                           {feedback.category}
                         </Badge>
 
@@ -322,6 +290,7 @@ export default function Feedback() {
                           variant={getPriorityVariant(
                             feedback.priority
                           )}
+                          className={feedback.priority === "High" ? "bg-rose-500 text-white" : ""}
                         >
                           {feedback.priority} Priority
                         </Badge>
@@ -329,39 +298,37 @@ export default function Feedback() {
                         {!feedback.read && (
                           <Badge
                             variant="outline"
-                            className="border-primary/30 text-primary"
+                            className="border-sky-300 bg-sky-50 text-sky-700 font-semibold"
                           >
                             New
                           </Badge>
                         )}
                       </div>
 
-                      <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">
+                      <p className="mt-3 max-w-3xl leading-relaxed text-slate-600 text-sm">
                         {feedback.message}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 lg:items-start">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <div className="flex items-center gap-3 lg:items-start bg-slate-50/60 p-3.5 rounded-xl border border-slate-100 lg:bg-transparent lg:p-0 lg:border-0">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100/60 text-sky-700 border border-sky-200">
                       <UserRound size={19} />
                     </div>
-
                     <div>
-                      <p className="font-medium">
+                      <p className="font-semibold text-slate-900 text-sm">
                         {feedback.mentor}
                       </p>
-
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-slate-500">
                         Project Mentor
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 flex flex-col justify-between gap-4 border-t pt-4 sm:flex-row sm:items-center">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock size={16} />
+                <div className="mt-6 flex flex-col justify-between gap-4 border-t border-slate-100 pt-4 sm:flex-row sm:items-center">
+                  <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+                    <Clock size={15} />
                     Received {feedback.date}
                   </div>
 
@@ -372,8 +339,9 @@ export default function Feedback() {
                       onClick={() =>
                         markAsRead(feedback.id)
                       }
+                      className="gap-2 border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100"
                     >
-                      <CheckCircle2 />
+                      <CheckCircle2 size={16} />
                       Mark as Read
                     </Button>
                   )}
@@ -384,26 +352,23 @@ export default function Feedback() {
         ))}
 
         {filteredFeedbacks.length === 0 && (
-          <Card>
+          <Card className="border border-sky-100 bg-white shadow-xl">
             <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                <MessageSquare
-                  size={30}
-                  className="text-muted-foreground"
-                />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-sky-50 border border-sky-200 text-sky-600">
+                <MessageSquare size={30} />
               </div>
 
-              <h3 className="mt-5 text-lg font-semibold">
+              <h3 className="mt-5 text-lg font-bold text-slate-900">
                 No Feedback Found
               </h3>
 
-              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              <p className="mt-2 max-w-sm text-sm text-slate-500">
                 No mentor feedback matches your current search or selected project.
               </p>
 
               <Button
                 variant="outline"
-                className="mt-5"
+                className="mt-5 border-slate-200 text-slate-700 hover:bg-slate-50"
                 onClick={() => {
                   setSearch("")
                   setProjectFilter("All")

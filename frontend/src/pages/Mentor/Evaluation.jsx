@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react"
 import {
-  ClipboardCheck,
   Award,
   Star,
   Users,
@@ -84,10 +83,13 @@ export default function Evaluation() {
     },
   ]
 
-  const [selectedProjectId, setSelectedProjectId] =
-    useState("")
+  const [selectedProjectId, setSelectedProjectId] = useState("")
 
-  const [marks, setMarks] = useState({
+  // Saved/committed evaluation state map: { [projectId]: { marks: {...}, remarks: "..." } }
+  const [evaluations, setEvaluations] = useState({})
+
+  // Temporary active inputs for the currently selected project
+  const [tempMarks, setTempMarks] = useState({
     innovation: "",
     implementation: "",
     design: "",
@@ -95,35 +97,51 @@ export default function Evaluation() {
     presentation: "",
   })
 
-  const [remarks, setRemarks] = useState("")
+  const [tempRemarks, setTempRemarks] = useState("")
   const [submitted, setSubmitted] = useState(false)
 
   const selectedProject = projects.find(
     (project) => project.id === selectedProjectId
   )
 
+  const handleProjectChange = (value) => {
+    setSelectedProjectId(value)
+    setSubmitted(false)
+
+    // Load existing evaluation data for the selected project if it exists
+    if (evaluations[value]) {
+      setTempMarks(evaluations[value].marks)
+      setTempRemarks(evaluations[value].remarks)
+    } else {
+      setTempMarks({
+        innovation: "",
+        implementation: "",
+        design: "",
+        functionality: "",
+        presentation: "",
+      })
+      setTempRemarks("")
+    }
+  }
+
   const totalMarks = useMemo(() => {
-    return Object.values(marks).reduce(
+    return Object.values(tempMarks).reduce(
       (total, mark) => total + (Number(mark) || 0),
       0
     )
-  }, [marks])
+  }, [tempMarks])
 
   const percentage = totalMarks
 
-  const handleMarkChange = (
-    criterion,
-    value,
-    maxMarks
-  ) => {
+  const handleMarkChange = (criterion, value, maxMarks) => {
     const numberValue = Number(value)
 
     if (numberValue > maxMarks) {
       return
     }
 
-    setMarks({
-      ...marks,
+    setTempMarks({
+      ...tempMarks,
       [criterion]: value,
     })
 
@@ -145,8 +163,7 @@ export default function Evaluation() {
     }
 
     const allFilled = criteria.every(
-      (criterion) =>
-        marks[criterion.id] !== ""
+      (criterion) => tempMarks[criterion.id] !== ""
     )
 
     if (!allFilled) {
@@ -154,7 +171,35 @@ export default function Evaluation() {
       return
     }
 
+    // Save the evaluation data into the committed state map
+    setEvaluations({
+      ...evaluations,
+      [selectedProjectId]: {
+        marks: tempMarks,
+        remarks: tempRemarks,
+      },
+    })
+
     setSubmitted(true)
+  }
+
+  const handleReset = () => {
+    setTempMarks({
+      innovation: "",
+      implementation: "",
+      design: "",
+      functionality: "",
+      presentation: "",
+    })
+
+    setTempRemarks("")
+    setSubmitted(false)
+
+    if (selectedProjectId) {
+      const updated = { ...evaluations }
+      delete updated[selectedProjectId]
+      setEvaluations(updated)
+    }
   }
 
   return (
@@ -176,10 +221,7 @@ export default function Evaluation() {
         <CardContent>
           <Select
             value={selectedProjectId}
-            onValueChange={(value) => {
-              setSelectedProjectId(value)
-              setSubmitted(false)
-            }}
+            onValueChange={handleProjectChange}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select an assigned project" />
@@ -335,7 +377,7 @@ export default function Evaluation() {
                         min="0"
                         max={criterion.maxMarks}
                         placeholder={`0 - ${criterion.maxMarks}`}
-                        value={marks[criterion.id]}
+                        value={tempMarks[criterion.id]}
                         onChange={(e) =>
                           handleMarkChange(
                             criterion.id,
@@ -366,9 +408,9 @@ export default function Evaluation() {
               <Textarea
                 placeholder="Write your evaluation remarks and suggestions..."
                 className="min-h-32"
-                value={remarks}
+                value={tempRemarks}
                 onChange={(e) => {
-                  setRemarks(e.target.value)
+                  setTempRemarks(e.target.value)
                   setSubmitted(false)
                 }}
               />
@@ -378,18 +420,7 @@ export default function Evaluation() {
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button
               variant="outline"
-              onClick={() => {
-                setMarks({
-                  innovation: "",
-                  implementation: "",
-                  design: "",
-                  functionality: "",
-                  presentation: "",
-                })
-
-                setRemarks("")
-                setSubmitted(false)
-              }}
+              onClick={handleReset}
             >
               Reset Evaluation
             </Button>

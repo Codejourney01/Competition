@@ -39,6 +39,8 @@ import { Label } from "@/components/ui/label"
 
 export default function Mentors() {
   const [search, setSearch] = useState("")
+  const [isOpen, setIsOpen] = useState(false)
+
   const [mentors, setMentors] = useState([
     {
       id: 1,
@@ -105,9 +107,9 @@ export default function Mentors() {
     e.preventDefault()
 
     if (
-      !newMentor.name ||
-      !newMentor.email ||
-      !newMentor.expertise
+      !newMentor.name.trim() ||
+      !newMentor.email.trim() ||
+      !newMentor.expertise.trim()
     ) {
       return
     }
@@ -127,6 +129,8 @@ export default function Mentors() {
       email: "",
       expertise: "",
     })
+
+    setIsOpen(false)
   }
 
   return (
@@ -135,7 +139,7 @@ export default function Mentors() {
         title="Mentors"
         description="Manage mentors and monitor their project assignments."
         action={
-          <Dialog>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button>
                 <UserPlus />

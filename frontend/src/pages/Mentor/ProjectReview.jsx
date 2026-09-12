@@ -2,7 +2,6 @@ import { useState } from "react"
 import {
   ClipboardCheck,
   FolderKanban,
-  Users,
   Calendar,
   CheckCircle2,
   AlertCircle,
@@ -80,9 +79,14 @@ export default function ProjectReview() {
   ]
 
   const [selectedProjectId, setSelectedProjectId] = useState("")
-  const [reviewStatus, setReviewStatus] = useState("")
-  const [comments, setComments] = useState("")
-  const [reviewed, setReviewed] = useState(false)
+
+  // Map to store reviews per project ID: { [projectId]: { status: string, comments: string, reviewed: boolean } }
+  const [reviews, setReviews] = useState({})
+
+  // Temporary local state for the currently active review inputs
+  const [tempStatus, setTempStatus] = useState("")
+  const [tempComments, setTempComments] = useState("")
+  const [tempReviewed, setTempReviewed] = useState(false)
 
   const selectedProject = projects.find(
     (project) => project.id === selectedProjectId
@@ -90,9 +94,16 @@ export default function ProjectReview() {
 
   const handleProjectChange = (value) => {
     setSelectedProjectId(value)
-    setReviewStatus("")
-    setComments("")
-    setReviewed(false)
+
+    if (reviews[value]) {
+      setTempStatus(reviews[value].status)
+      setTempComments(reviews[value].comments)
+      setTempReviewed(reviews[value].reviewed)
+    } else {
+      setTempStatus("")
+      setTempComments("")
+      setTempReviewed(false)
+    }
   }
 
   const handleReview = (status) => {
@@ -101,13 +112,22 @@ export default function ProjectReview() {
       return
     }
 
-    if (!comments.trim()) {
+    if (!tempComments.trim()) {
       alert("Please add review comments")
       return
     }
 
-    setReviewStatus(status)
-    setReviewed(true)
+    setTempStatus(status)
+    setTempReviewed(true)
+
+    setReviews({
+      ...reviews,
+      [selectedProjectId]: {
+        status,
+        comments: tempComments,
+        reviewed: true,
+      },
+    })
   }
 
   return (
@@ -354,10 +374,10 @@ export default function ProjectReview() {
                 <Textarea
                   placeholder="Write your review comments, suggestions and required improvements..."
                   className="min-h-40"
-                  value={comments}
+                  value={tempComments}
                   onChange={(e) => {
-                    setComments(e.target.value)
-                    setReviewed(false)
+                    setTempComments(e.target.value)
+                    setTempReviewed(false)
                   }}
                 />
               </div>
@@ -385,17 +405,17 @@ export default function ProjectReview() {
             </CardContent>
           </Card>
 
-          {reviewed && (
+          {tempReviewed && (
             <Card>
               <CardContent className="flex items-start gap-4 p-5">
                 <div
                   className={`rounded-full p-3 ${
-                    reviewStatus === "Approved"
+                    tempStatus === "Approved"
                       ? "bg-green-100 text-green-600"
                       : "bg-orange-100 text-orange-600"
                   }`}
                 >
-                  {reviewStatus === "Approved" ? (
+                  {tempStatus === "Approved" ? (
                     <CheckCircle2 size={24} />
                   ) : (
                     <AlertCircle size={24} />
@@ -410,7 +430,7 @@ export default function ProjectReview() {
                   <p className="mt-1 text-sm text-muted-foreground">
                     {selectedProject.title} has been marked as{" "}
                     <span className="font-medium">
-                      {reviewStatus}
+                      {tempStatus}
                     </span>
                     .
                   </p>
@@ -424,9 +444,9 @@ export default function ProjectReview() {
               variant="outline"
               onClick={() => {
                 setSelectedProjectId("")
-                setReviewStatus("")
-                setComments("")
-                setReviewed(false)
+                setTempStatus("")
+                setTempComments("")
+                setTempReviewed(false)
               }}
             >
               <Send />

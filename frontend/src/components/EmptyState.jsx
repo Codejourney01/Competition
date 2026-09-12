@@ -6,16 +6,16 @@ export default function EmptyState({
   action,
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border bg-white px-5 py-14 text-center">
-      <div className="rounded-full bg-gray-100 p-4 text-gray-500">
+    <div className="flex flex-col items-center justify-center rounded-xl border bg-card px-5 py-14 text-center text-card-foreground">
+      <div className="rounded-full bg-muted p-4 text-muted-foreground">
         <FolderOpen size={28} />
       </div>
 
-      <h3 className="mt-4 text-lg font-semibold text-gray-900">
+      <h3 className="mt-4 text-lg font-semibold text-foreground">
         {title}
       </h3>
 
-      <p className="mt-2 max-w-md text-sm text-gray-500">
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">
         {description}
       </p>
 

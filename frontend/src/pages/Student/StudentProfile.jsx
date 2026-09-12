@@ -1,6 +1,5 @@
 import { useState } from "react"
 import {
-  UserRound,
   Mail,
   Phone,
   Building2,
@@ -33,7 +32,8 @@ export default function StudentProfile() {
   const [isEditing, setIsEditing] = useState(false)
   const [saved, setSaved] = useState(false)
 
-  const [profile, setProfile] = useState({
+  // Temporary state to hold values during editing
+  const [tempProfile, setTempProfile] = useState({
     name: "Vishu",
     email: "vishu@example.com",
     phone: "+91 9876543210",
@@ -42,9 +42,12 @@ export default function StudentProfile() {
     semester: "Final Year",
   })
 
+  // Committed state that updates only on Save
+  const [profile, setProfile] = useState(tempProfile)
+
   const [skillInput, setSkillInput] = useState("")
 
-  const [skills, setSkills] = useState([
+  const [tempSkills, setTempSkills] = useState([
     "React",
     "JavaScript",
     "Node.js",
@@ -52,11 +55,13 @@ export default function StudentProfile() {
     "Tailwind CSS",
   ])
 
+  const [skills, setSkills] = useState(tempSkills)
+
   const handleChange = (e) => {
     const { name, value } = e.target
 
-    setProfile({
-      ...profile,
+    setTempProfile({
+      ...tempProfile,
       [name]: value,
     })
 
@@ -68,29 +73,34 @@ export default function StudentProfile() {
 
     if (!value) return
 
-    if (skills.some((skill) => skill.toLowerCase() === value.toLowerCase())) {
+    if (tempSkills.some((skill) => skill.toLowerCase() === value.toLowerCase())) {
       return
     }
 
-    setSkills([...skills, value])
+    setTempSkills([...tempSkills, value])
     setSkillInput("")
     setSaved(false)
   }
 
   const removeSkill = (skillToRemove) => {
-    setSkills(
-      skills.filter((skill) => skill !== skillToRemove)
+    setTempSkills(
+      tempSkills.filter((skill) => skill !== skillToRemove)
     )
 
     setSaved(false)
   }
 
   const handleSave = () => {
+    setProfile(tempProfile)
+    setSkills(tempSkills)
     setIsEditing(false)
     setSaved(true)
   }
 
   const handleCancel = () => {
+    setTempProfile(profile)
+    setTempSkills(skills)
+    setSkillInput("")
     setIsEditing(false)
   }
 
@@ -228,7 +238,7 @@ export default function StudentProfile() {
 
               <Input
                 name="name"
-                value={profile.name}
+                value={tempProfile.name}
                 disabled={!isEditing}
                 onChange={handleChange}
               />
@@ -240,7 +250,7 @@ export default function StudentProfile() {
               <Input
                 name="email"
                 type="email"
-                value={profile.email}
+                value={tempProfile.email}
                 disabled={!isEditing}
                 onChange={handleChange}
               />
@@ -251,7 +261,7 @@ export default function StudentProfile() {
 
               <Input
                 name="phone"
-                value={profile.phone}
+                value={tempProfile.phone}
                 disabled={!isEditing}
                 onChange={handleChange}
               />
@@ -262,7 +272,7 @@ export default function StudentProfile() {
 
               <Input
                 name="semester"
-                value={profile.semester}
+                value={tempProfile.semester}
                 disabled={!isEditing}
                 onChange={handleChange}
               />
@@ -295,7 +305,7 @@ export default function StudentProfile() {
 
               <Input
                 name="college"
-                value={profile.college}
+                value={tempProfile.college}
                 disabled={!isEditing}
                 onChange={handleChange}
                 className="pl-10"
@@ -308,7 +318,7 @@ export default function StudentProfile() {
 
             <Input
               name="course"
-              value={profile.course}
+              value={tempProfile.course}
               disabled={!isEditing}
               onChange={handleChange}
             />
@@ -353,7 +363,7 @@ export default function StudentProfile() {
           )}
 
           <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
+            {(isEditing ? tempSkills : skills).map((skill) => (
               <Badge
                 key={skill}
                 variant="secondary"
