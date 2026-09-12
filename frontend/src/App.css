@@ -1,6 +1,17 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "PlusJakartaSans";
+  src: url("/Plus_Jakarta_Sans/PlusJakartaSans-VariableFont_wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+}
 
+@theme {
+  --font-sans: "PlusJakartaSans", sans-serif;
+  --font-heading: "PlusJakartaSans", sans-serif;
+}
 :root {
   --font-size-root: 16px;
 
