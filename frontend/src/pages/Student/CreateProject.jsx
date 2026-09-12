@@ -1,5 +1,4 @@
-import { useRef, useState } from "react";
-
+import { useRef, useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -20,12 +19,10 @@ import {
 } from "lucide-react";
 
 import DashboardHeader from "@/components/DashboardHeader";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import {
   Card,
   CardContent,
@@ -33,7 +30,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import {
   Select,
   SelectContent,
@@ -41,11 +37,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { Badge } from "@/components/ui/badge";
 
 export default function CreateProject() {
   const fileInputRef = useRef(null);
+
+  // ==========================================
+  // PROJECT FORM
+  // ==========================================
 
   const [projectTitle, setProjectTitle] = useState("");
   const [domain, setDomain] = useState("");
@@ -58,22 +57,81 @@ export default function CreateProject() {
   const [technologyInput, setTechnologyInput] = useState("");
   const [technologies, setTechnologies] = useState([]);
 
-  const [memberInput, setMemberInput] = useState("");
-  const [teamMembers, setTeamMembers] = useState([]);
-
   const [githubUrl, setGithubUrl] = useState("");
   const [demoUrl, setDemoUrl] = useState("");
 
   const [proposalFile, setProposalFile] = useState(null);
 
+  // ==========================================
+  // TEAM
+  // ==========================================
+
+  const [team, setTeam] = useState(null);
+  const [loadingTeam, setLoadingTeam] = useState(true);
+
+  // ==========================================
+  // SUBMISSION
+  // ==========================================
+
+  const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [createdProject, setCreatedProject] = useState(null);
+
+  // ==========================================
+  // GET CURRENT STUDENT TEAM
+  // ==========================================
+
+  useEffect(() => {
+    const fetchMyTeam = async () => {
+      try {
+        setLoadingTeam(true);
+        setErrorMessage("");
+
+        const response = await fetch(
+          "http://localhost:5001/api/teams/my-team",
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to get team");
+        }
+
+        setTeam(data.team);
+      } catch (error) {
+        console.error("Get team error:", error);
+
+        setTeam(null);
+
+        setErrorMessage(
+          error.message ||
+            "Unable to load your team. Please create or join a team first."
+        );
+      } finally {
+        setLoadingTeam(false);
+      }
+    };
+
+    fetchMyTeam();
+  }, []);
+
+  // ==========================================
+  // CLEAR MESSAGES
+  // ==========================================
 
   const clearMessages = () => {
     setSuccessMessage("");
     setErrorMessage("");
   };
+
+  // ==========================================
+  // OBJECTIVES
+  // ==========================================
 
   const addObjective = () => {
     const value = objectiveInput.trim();
@@ -83,13 +141,20 @@ export default function CreateProject() {
       return;
     }
     clearMessages();
-    setObjectives([...objectives, value]);
+
+    setObjectives((prev) => [...prev, value]);
     setObjectiveInput("");
   };
 
   const removeObjective = (objective) => {
-    setObjectives(objectives.filter((item) => item !== objective));
+    setObjectives((prev) =>
+      prev.filter((item) => item !== objective)
+    );
   };
+
+  // ==========================================
+  // TECHNOLOGIES
+  // ==========================================
 
   const addTechnology = () => {
     const value = technologyInput.trim();
@@ -99,12 +164,15 @@ export default function CreateProject() {
       return;
     }
     clearMessages();
-    setTechnologies([...technologies, value]);
+
+    setTechnologies((prev) => [...prev, value]);
     setTechnologyInput("");
   };
 
   const removeTechnology = (technology) => {
-    setTechnologies(technologies.filter((item) => item !== technology));
+    setTechnologies((prev) =>
+      prev.filter((item) => item !== technology)
+    );
   };
 
   const addMember = () => {
@@ -130,12 +198,19 @@ export default function CreateProject() {
     clearMessages();
   };
 
+  // ==========================================
+  // VALIDATE PROJECT
+  // ==========================================
+
   const validateProject = () => {
     if (!projectTitle.trim()) {
       setErrorMessage("Please enter the project title");
       return false;
     }
-    if (!domain) {
+    if (!domain.trim()) {
+      setErrorMessage("Please select a project domain");
+      return false;
+    }
       setErrorMessage("Please select a project domain");
       return false;
     }
@@ -148,61 +223,124 @@ export default function CreateProject() {
       return false;
     }
     if (objectives.length === 0) {
-      setErrorMessage("Please add at least one project objective");
+      setErrorMessage(
+        "Please add at least one project objective"
+      );
       return false;
     }
     if (technologies.length === 0) {
-      setErrorMessage("Please add at least one technology");
+      setErrorMessage(
+        "Please add at least one technology"
+      );
       return false;
     }
+    if (!team?._id) {
+      setErrorMessage(
+        "You must create or join a team before creating a project"
+      );
+      return false;
+    }
+
     if (teamMembers.length === 0) {
       setErrorMessage("Please add at least one team member");
+      return false;
+    }
       return false;
     }
     return true;
   };
 
-  const createProjectData = (status) => {
-    return {
-      title: projectTitle,
-      domain,
-      problemStatement,
-      objectives,
-      description,
-      technologies,
-      teamMembers,
-      githubUrl,
-      demoUrl,
-      proposalFile: proposalFile?.name || "",
-      status,
-      progressPercentage: 0,
-      currentMilestone: "Proposal",
-    };
-  };
+  // ==========================================
+  // CREATE PROJECT API
+  // ==========================================
 
-  const handleSaveDraft = () => {
+  const submitProjectToAPI = async (status) => {
     clearMessages();
-    if (!projectTitle.trim()) {
-      setErrorMessage("Please enter at least a project title to save a draft");
+    if (status === "submitted" && !validateProject()) {
       return;
     }
-    const projectData = createProjectData("draft");
-    setCreatedProject(projectData);
-    setSuccessMessage(
-      "Project draft saved successfully. You can continue editing it later."
-    );
+
+    if (status === "draft" && !projectTitle.trim()) {
+      setErrorMessage(
+        "Please enter at least a project title to save a draft"
+      );
+      return;
+    }
+
+    if (!team?._id) {
+      setErrorMessage(
+        "You must create or join a team before creating a project"
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const projectData = {
+        title: projectTitle.trim(),
+        domain: domain.trim(),
+        problemStatement: problemStatement.trim(),
+        objectives,
+        description: description.trim(),
+        technologies,
+        team: team._id,
+        proposalFile: proposalFile?.name || "",
+        githubUrl: githubUrl.trim(),
+        demoUrl: demoUrl.trim(),
+        status,
+        progressPercentage: 0,
+        currentMilestone: "Proposal",
+      };
+
+      const response = await fetch("http://localhost:5001/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(projectData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create project");
+      }
+
+      setCreatedProject(data.project);
+
+      if (status === "draft") {
+        setSuccessMessage("Project draft saved successfully.");
+      } else {
+        setSuccessMessage(
+          "Project proposal submitted successfully. It is now ready for mentor assignment."
+        );
+      }
+    } catch (error) {
+      console.error("Create project error:", error);
+
+      setErrorMessage(error.message || "Failed to create project");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmitProposal = () => {
-    clearMessages();
-    const isValid = validateProject();
-    if (!isValid) return;
-    const projectData = createProjectData("submitted");
-    setCreatedProject(projectData);
-    setSuccessMessage(
-      "Project proposal submitted successfully. It is now ready for mentor assignment."
-    );
+  const handleSaveDraft = async () => {
+    await submitProjectToAPI("draft");
   };
+
+  // ==========================================
+  // SUBMIT PROPOSAL
+  // ==========================================
+
+  const handleSubmitProposal = async () => {
+    await submitProjectToAPI("submitted");
+  };
+
+  // ==========================================
+  // RESET FORM
+  // ==========================================
 
   const resetProject = () => {
     setProjectTitle("");
@@ -226,6 +364,10 @@ export default function CreateProject() {
     }
   };
 
+  // ==========================================
+  // RENDER
+  // ==========================================
+
   return (
     <div className="min-h-screen bg-sky-50/50 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Header section matching login card theme */}
@@ -244,7 +386,7 @@ export default function CreateProject() {
         </div>
       </div>
 
-      {/* Workflow Banner */}
+      {/* WORKFLOW */}
       <Card className="overflow-hidden border border-sky-100 bg-white shadow-md shadow-sky-100/50">
         <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
@@ -252,19 +394,63 @@ export default function CreateProject() {
               <Lightbulb size={24} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-slate-900">Project Submission Workflow</h3>
+              <h3 className="font-bold text-base text-slate-900">
+                Project Submission Workflow
+              </h3>
               <p className="mt-1 text-sm text-slate-500">
                 Create your project, submit the proposal, and wait for the administrator to assign a mentor.
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="w-fit px-3 py-1.5 font-medium border-sky-200 text-sky-600 bg-sky-50/50">
+
+          <Badge
+            variant="secondary"
+            className="w-fit px-3 py-1.5"
+          >
             Step 1 of 5
           </Badge>
         </CardContent>
       </Card>
 
-      {/* Error Message */}
+      {/* TEAM STATUS */}
+      {!loadingTeam && (
+        <Card
+          className={
+            team ? "border-green-500/30" : "border-yellow-500/30"
+          }
+        >
+          <CardContent className="flex items-center gap-4 p-4">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                team ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"
+              }`}
+            >
+              <Users size={20} />
+            </div>
+
+            <div>
+              {team ? (
+                <>
+                  <p className="font-semibold">Team: {team.teamName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {team.members?.length || 0} team member
+                    {team.members?.length === 1 ? "" : "s"} added
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold">No team found</p>
+                  <p className="text-sm text-muted-foreground">
+                    Create or join a team before creating a project.
+                  </p>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {errorMessage && (
       {errorMessage && (
         <Card className="border border-rose-200 bg-rose-50 shadow-md animate-in fade-in-50">
           <CardContent className="flex items-start justify-between gap-4 p-4">
@@ -279,7 +465,7 @@ export default function CreateProject() {
         </Card>
       )}
 
-      {/* Success Message */}
+      {successMessage && (
       {successMessage && (
         <Card className="border border-emerald-200 bg-emerald-50 shadow-md animate-in fade-in-50">
           <CardContent className="flex items-start justify-between gap-4 p-5">
@@ -299,18 +485,19 @@ export default function CreateProject() {
         </Card>
       )}
 
-      {/* Main Grid: Form + Sticky Summary */}
-      <div className="grid gap-8 xl:grid-cols-3">
-        <Card className="xl:col-span-2 shadow-xl border border-sky-100 bg-white">
-          <CardHeader className="space-y-1 pb-4 border-b border-slate-100">
-            <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
-              <FolderPlus size={20} className="text-sky-600" />
+      {/* BASIC INFORMATION */}
+      <div className="grid gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FolderPlus size={20} />
               Basic Project Information
             </CardTitle>
             <CardDescription className="text-slate-500">Enter the main details and purpose of your project.</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6 pt-6">
+            {/* TITLE */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">Project Title <span className="text-rose-500">*</span></Label>
               <Input
@@ -323,6 +510,8 @@ export default function CreateProject() {
                 }}
               />
             </div>
+
+            {/* DOMAIN */}
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">Project Domain <span className="text-rose-500">*</span></Label>
@@ -347,8 +536,11 @@ export default function CreateProject() {
                   <SelectItem value="Cloud Computing">Cloud Computing</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
+                </SelectContent>
               </Select>
             </div>
+
+            {/* PROBLEM */}
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">Problem Statement <span className="text-rose-500">*</span></Label>
@@ -361,8 +553,12 @@ export default function CreateProject() {
                   clearMessages();
                 }}
               />
-              <p className="text-xs text-slate-400">Describe the real-world problem or challenge your project is solving.</p>
+              <p className="text-xs text-slate-400">
+                Describe the real-world problem or challenge your project is solving.
+              </p>
             </div>
+
+            {/* DESCRIPTION */}
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">Project Description <span className="text-rose-500">*</span></Label>
@@ -375,12 +571,14 @@ export default function CreateProject() {
                   clearMessages();
                 }}
               />
-              <p className="text-xs text-slate-400">Explain what your project does and how the proposed solution works.</p>
+              <p className="text-xs text-slate-400">
+                Explain what your project does and how the proposed solution works.
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Live Summary Widget */}
+        {/* SUMMARY */}
         <Card className="h-fit xl:sticky xl:top-6 shadow-xl border border-sky-100 bg-white">
           <CardHeader className="pb-3 border-b border-slate-100">
             <CardTitle className="text-base text-slate-900">Project Summary</CardTitle>
@@ -394,8 +592,12 @@ export default function CreateProject() {
             </div>
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Domain</p>
-              <p className="mt-1 font-semibold text-sm text-slate-800">{domain || <span className="text-slate-400 italic">Not selected</span>}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Domain
+              </p>
+              <p className="mt-1 font-semibold text-sm text-slate-800">
+                {domain || <span className="text-slate-400 italic">Not selected</span>}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -409,7 +611,9 @@ export default function CreateProject() {
               </div>
               <div className="rounded-xl border border-slate-200 bg-sky-50/30 p-3">
                 <p className="text-xs text-slate-500">Team Members</p>
-                <p className="mt-1 text-xl font-bold text-sky-600">{teamMembers.length}</p>
+                <p className="mt-1 text-xl font-bold text-sky-600">
+                  {team?.members?.length || teamMembers.length || 0}
+                </p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-sky-50/30 p-3">
                 <p className="text-xs text-slate-500">Progress</p>
@@ -418,16 +622,21 @@ export default function CreateProject() {
             </div>
 
             <div className="rounded-xl bg-sky-50 border border-sky-100 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-sky-700 mb-1.5">Current Status</p>
-              <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium bg-sky-500 text-white shadow-2xs">
-                Draft
+              <p className="text-xs font-semibold uppercase tracking-wider text-sky-700 mb-1.5">
+                Current Status
+              </p>
+              <Badge
+                variant="secondary"
+                className="px-2.5 py-0.5 text-xs font-medium bg-sky-500 text-white shadow-2xs"
+              >
+                {createdProject?.status === "submitted" ? "Submitted" : "Draft"}
               </Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Objectives Section */}
+      {/* OBJECTIVES */}
       <Card className="shadow-xl border border-sky-100 bg-white">
         <CardHeader className="pb-4 border-b border-slate-100">
           <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
@@ -451,7 +660,11 @@ export default function CreateProject() {
                 }
               }}
             />
-            <Button type="button" onClick={addObjective} className="h-11 shrink-0 px-5 gap-2 bg-black hover:bg-zinc-900 text-white font-semibold shadow-md">
+            <Button
+              type="button"
+              onClick={addObjective}
+              className="h-11 shrink-0 px-5 gap-2 bg-black hover:bg-zinc-900 text-white font-semibold shadow-md"
+            >
               <Plus size={16} />
               Add Objective
             </Button>
@@ -467,7 +680,12 @@ export default function CreateProject() {
                     </div>
                     <p className="text-sm font-medium text-slate-800">{objective}</p>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50" onClick={() => removeObjective(objective)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                    onClick={() => removeObjective(objective)}
+                  >
                     <Trash2 size={16} />
                   </Button>
                 </div>
@@ -482,14 +700,16 @@ export default function CreateProject() {
         </CardContent>
       </Card>
 
-      {/* Technology Stack Section */}
+      {/* TECHNOLOGY */}
       <Card className="shadow-xl border border-sky-100 bg-white">
         <CardHeader className="pb-4 border-b border-slate-100">
           <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
             <Code2 size={20} className="text-sky-600" />
             Technology Stack
           </CardTitle>
-          <CardDescription className="text-slate-500">Add the technologies, frameworks, and tools planned for your project.</CardDescription>
+          <CardDescription className="text-slate-500">
+            Add the technologies, frameworks, and tools planned for your project.
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-5 pt-6">
@@ -506,7 +726,11 @@ export default function CreateProject() {
                 }
               }}
             />
-            <Button type="button" onClick={addTechnology} className="h-11 shrink-0 px-5 gap-2 bg-black hover:bg-zinc-900 text-white font-semibold shadow-md">
+            <Button
+              type="button"
+              onClick={addTechnology}
+              className="h-11 shrink-0 px-5 gap-2 bg-black hover:bg-zinc-900 text-white font-semibold shadow-md"
+            >
               <Plus size={16} />
               Add Technology
             </Button>
@@ -533,14 +757,16 @@ export default function CreateProject() {
         </CardContent>
       </Card>
 
-      {/* Team Members Section */}
+      {/* TEAM */}
       <Card className="shadow-xl border border-sky-100 bg-white">
         <CardHeader className="pb-4 border-b border-slate-100">
           <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
             <Users size={20} className="text-sky-600" />
             Team Members
           </CardTitle>
-          <CardDescription className="text-slate-500">Add the students who are working together on this project.</CardDescription>
+          <CardDescription className="text-slate-500">
+            Add the students who are working together on this project.
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-5 pt-6">
@@ -557,13 +783,38 @@ export default function CreateProject() {
                 }
               }}
             />
-            <Button type="button" onClick={addMember} className="h-11 shrink-0 px-5 gap-2 bg-black hover:bg-zinc-900 text-white font-semibold shadow-md">
+            <Button
+              type="button"
+              onClick={addMember}
+              className="h-11 shrink-0 px-5 gap-2 bg-black hover:bg-zinc-900 text-white font-semibold shadow-md"
+            >
               <Plus size={16} />
               Add Member
             </Button>
           </div>
 
-          {teamMembers.length > 0 ? (
+          {loadingTeam ? (
+            <div className="rounded-xl border border-dashed p-8 text-center">
+              <p className="text-sm text-muted-foreground">Loading your team...</p>
+            </div>
+          ) : team?.members?.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {team.members.map((member) => (
+                <div key={member._id} className="flex items-center rounded-xl border p-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                      {member.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{member.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : teamMembers.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {teamMembers.map((member) => (
                 <div key={member} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs">
@@ -573,7 +824,12 @@ export default function CreateProject() {
                     </div>
                     <p className="truncate text-sm font-medium text-slate-800">{member}</p>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50" onClick={() => removeMember(member)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                    onClick={() => removeMember(member)}
+                  >
                     <Trash2 size={16} />
                   </Button>
                 </div>
@@ -587,9 +843,21 @@ export default function CreateProject() {
           )}
         </CardContent>
       </Card>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center bg-sky-50/20">
+              <Users size={28} className="mx-auto text-slate-400" />
+              <p className="mt-3 text-sm font-medium text-slate-500">No team members added yet.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Project Links & Proposal Upload Grid */}
+      {/* LINKS + PROPOSAL */}
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* LINKS */}
         <Card className="shadow-xl border border-sky-100 bg-white">
           <CardHeader className="pb-4 border-b border-slate-100">
             <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
@@ -600,6 +868,7 @@ export default function CreateProject() {
           </CardHeader>
 
           <CardContent className="space-y-5 pt-6">
+            {/* GITHUB */}
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">GitHub Repository URL</Label>
               <div className="relative">
@@ -608,10 +877,14 @@ export default function CreateProject() {
                   className="pl-10 h-11 rounded-xl border border-slate-200 bg-white text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
                   placeholder="https://github.com/username/project"
                   value={githubUrl}
-                  onChange={(e) => setGithubUrl(e.target.value)}
+                  onChange={(e) =>
+                    setGithubUrl(e.target.value)
+                  }
                 />
               </div>
             </div>
+
+            {/* DEMO */}
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-slate-700">Demo URL</Label>
@@ -621,13 +894,16 @@ export default function CreateProject() {
                   className="pl-10 h-11 rounded-xl border border-slate-200 bg-white text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
                   placeholder="https://your-project-demo.com"
                   value={demoUrl}
-                  onChange={(e) => setDemoUrl(e.target.value)}
+                  onChange={(e) =>
+                    setDemoUrl(e.target.value)
+                  }
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* PROPOSAL */}
         <Card className="shadow-xl border border-sky-100 bg-white">
           <CardHeader className="pb-4 border-b border-slate-100">
             <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
@@ -654,7 +930,9 @@ export default function CreateProject() {
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-slate-800">{proposalFile.name}</p>
-                    <p className="text-xs text-slate-400">{(proposalFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="text-xs text-slate-400">
+                      {(proposalFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -680,7 +958,9 @@ export default function CreateProject() {
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 transition-transform group-hover:scale-105 border border-sky-200">
                   <Upload size={22} className="text-sky-600" />
                 </div>
-                <p className="mt-4 font-semibold text-sm text-slate-700">Upload Proposal Document</p>
+                <p className="mt-4 font-semibold text-sm text-slate-700">
+                  Upload Proposal Document
+                </p>
                 <p className="mt-1 text-xs text-slate-400">PDF, DOC or DOCX</p>
               </button>
             )}
@@ -688,7 +968,7 @@ export default function CreateProject() {
         </Card>
       </div>
 
-      {/* Created Project Notification Card */}
+      {/* CREATED PROJECT */}
       {createdProject && (
         <Card className="border border-sky-200 bg-sky-50/50 shadow-xl">
           <CardHeader className="pb-3">
@@ -701,10 +981,14 @@ export default function CreateProject() {
           <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-0">
             <div>
               <p className="font-semibold text-sm text-slate-900">{createdProject.title}</p>
-              <p className="mt-0.5 text-xs text-slate-500">Current milestone: Proposal</p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Current milestone: {createdProject.currentMilestone || "Proposal"}
+              </p>
             </div>
             <Badge
-              variant={createdProject.status === "submitted" ? "default" : "secondary"}
+              variant={
+                createdProject.status === "submitted" ? "default" : "secondary"
+              }
               className="w-fit px-3 py-1 font-medium bg-sky-600 text-white shadow-2xs"
             >
               {createdProject.status === "submitted" ? "Proposal Submitted" : "Draft Saved"}
@@ -713,20 +997,29 @@ export default function CreateProject() {
         </Card>
       )}
 
-      {/* Bottom Action Footer */}
+      {/* ACTIONS */}
       <div className="flex flex-col-reverse gap-4 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="ghost" onClick={resetProject} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100">
+        <Button variant="ghost" onClick={resetProject} className="text-slate-500 hover:text-slate-900 hover:bg-slate-100" disabled={loading}>
           Reset Form
         </Button>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button variant="outline" onClick={handleSaveDraft} className="gap-2 h-11 px-5 border-slate-200 bg-white text-slate-700 hover:bg-sky-50/50 hover:text-slate-900">
+          <Button
+            variant="outline"
+            onClick={handleSaveDraft}
+            className="gap-2 h-11 px-5 border-slate-200 bg-white text-slate-700 hover:bg-sky-50/50 hover:text-slate-900"
+            disabled={loading}
+          >
             <Save size={16} />
-            Save as Draft
+            {loading ? "Saving..." : "Save as Draft"}
           </Button>
-          <Button onClick={handleSubmitProposal} className="gap-2 h-11 px-6 shadow-md bg-black hover:bg-zinc-900 text-white font-semibold">
+          <Button
+            onClick={handleSubmitProposal}
+            className="gap-2 h-11 px-6 shadow-md bg-black hover:bg-zinc-900 text-white font-semibold"
+            disabled={loading}
+          >
             <Send size={16} />
-            Submit Proposal
+            {loading ? "Submitting..." : "Submit Proposal"}
           </Button>
         </div>
       </div>
