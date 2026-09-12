@@ -17,6 +17,7 @@ export default function Login() {
   const [password, setPassword] = useState("")
   const [role, setRole] = useState("Student")
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   const roles = [
@@ -37,7 +38,7 @@ export default function Login() {
     },
   ]
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
 
     setError("")
@@ -47,24 +48,56 @@ export default function Login() {
       return
     }
 
-    if (role === "Student") {
-      navigate("/student/dashboard")
-    }
+    try {
+      setLoading(true)
 
-    if (role === "Mentor") {
-      navigate("/mentor/dashboard")
-    }
+      const response = await fetch(
+        "http://localhost:5001/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+            role: role.toLowerCase(),
+          }),
+        }
+      )
 
-    if (role === "Admin") {
-      navigate("/admin/dashboard")
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed")
+      }
+
+      console.log("Login successful:", data)
+
+      // Redirect according to selected role
+      if (role === "Student") {
+        navigate("/student/dashboard")
+      } else if (role === "Mentor") {
+        navigate("/mentor/dashboard")
+      } else if (role === "Admin") {
+        navigate("/admin/dashboard")
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      setError(error.message || "Something went wrong")
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto grid min-h-[calc(100vh-32px)] max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-200/70 lg:grid-cols-2">
-        
+
+        {/* LEFT SIDE */}
         <div className="relative hidden overflow-hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
+
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.45),transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(99,102,241,0.35),transparent_40%)]" />
 
           <div className="relative">
@@ -108,6 +141,7 @@ export default function Login() {
           </div>
 
           <div className="relative grid grid-cols-3 gap-3">
+
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
               <p className="text-2xl font-bold">
                 3
@@ -137,12 +171,14 @@ export default function Login() {
                 Access
               </p>
             </div>
+
           </div>
         </div>
 
+        {/* RIGHT SIDE */}
         <div className="flex items-center justify-center p-5 sm:p-8 lg:p-12">
           <div className="w-full max-w-md">
-            
+
             <button
               onClick={() => navigate("/")}
               className="mb-8 text-sm font-medium text-slate-500 transition hover:text-blue-600 lg:hidden"
@@ -170,6 +206,7 @@ export default function Login() {
               </p>
             </div>
 
+            {/* ROLE SELECTION */}
             <div className="mt-8">
               <p className="mb-3 text-sm font-semibold text-slate-700">
                 Select your portal
@@ -214,10 +251,13 @@ export default function Login() {
               </div>
             </div>
 
+            {/* LOGIN FORM */}
             <form
               onSubmit={handleLogin}
               className="mt-8 space-y-5"
             >
+
+              {/* EMAIL */}
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Email address
@@ -232,6 +272,7 @@ export default function Login() {
                 />
               </div>
 
+              {/* PASSWORD */}
               <div>
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-sm font-semibold text-slate-700">
@@ -269,21 +310,29 @@ export default function Login() {
                 </div>
               </div>
 
+              {/* ERROR */}
               {error && (
                 <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
                   {error}
                 </div>
               )}
 
+              {/* SUBMIT */}
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 hover:shadow-xl"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Continue as {role}
-                <ArrowRight size={18} />
+                {loading
+                  ? "Signing in..."
+                  : `Continue as ${role}`}
+
+                {!loading && <ArrowRight size={18} />}
               </button>
+
             </form>
 
+            {/* REGISTER */}
             {role !== "Admin" && (
               <p className="mt-7 text-center text-sm text-slate-500">
                 Don't have an account?{" "}
@@ -301,8 +350,10 @@ export default function Login() {
               By continuing, you agree to access the ProjectMentor platform
               according to your assigned role.
             </p>
+
           </div>
         </div>
+
       </div>
     </div>
   )

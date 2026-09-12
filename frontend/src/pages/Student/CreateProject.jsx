@@ -1,5 +1,4 @@
-import { useRef, useState } from "react";
-
+import { useRef, useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -19,12 +18,10 @@ import {
 } from "lucide-react";
 
 import DashboardHeader from "@/components/DashboardHeader";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import {
   Card,
   CardContent,
@@ -32,7 +29,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import {
   Select,
   SelectContent,
@@ -40,11 +36,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { Badge } from "@/components/ui/badge";
 
 export default function CreateProject() {
   const fileInputRef = useRef(null);
+
+  // ==========================================
+  // PROJECT FORM
+  // ==========================================
 
   const [projectTitle, setProjectTitle] = useState("");
   const [domain, setDomain] = useState("");
@@ -57,22 +56,81 @@ export default function CreateProject() {
   const [technologyInput, setTechnologyInput] = useState("");
   const [technologies, setTechnologies] = useState([]);
 
-  const [memberInput, setMemberInput] = useState("");
-  const [teamMembers, setTeamMembers] = useState([]);
-
   const [githubUrl, setGithubUrl] = useState("");
   const [demoUrl, setDemoUrl] = useState("");
 
   const [proposalFile, setProposalFile] = useState(null);
 
+  // ==========================================
+  // TEAM
+  // ==========================================
+
+  const [team, setTeam] = useState(null);
+  const [loadingTeam, setLoadingTeam] = useState(true);
+
+  // ==========================================
+  // SUBMISSION
+  // ==========================================
+
+  const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [createdProject, setCreatedProject] = useState(null);
+
+  // ==========================================
+  // GET CURRENT STUDENT TEAM
+  // ==========================================
+
+  useEffect(() => {
+    const fetchMyTeam = async () => {
+      try {
+        setLoadingTeam(true);
+        setErrorMessage("");
+
+        const response = await fetch(
+          "http://localhost:5001/api/teams/my-team",
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to get team");
+        }
+
+        setTeam(data.team);
+      } catch (error) {
+        console.error("Get team error:", error);
+
+        setTeam(null);
+
+        setErrorMessage(
+          error.message ||
+            "Unable to load your team. Please create or join a team first."
+        );
+      } finally {
+        setLoadingTeam(false);
+      }
+    };
+
+    fetchMyTeam();
+  }, []);
+
+  // ==========================================
+  // CLEAR MESSAGES
+  // ==========================================
 
   const clearMessages = () => {
     setSuccessMessage("");
     setErrorMessage("");
   };
+
+  // ==========================================
+  // OBJECTIVES
+  // ==========================================
 
   const addObjective = () => {
     const value = objectiveInput.trim();
@@ -85,13 +143,20 @@ export default function CreateProject() {
     }
 
     clearMessages();
-    setObjectives([...objectives, value]);
+
+    setObjectives((prev) => [...prev, value]);
     setObjectiveInput("");
   };
 
   const removeObjective = (objective) => {
-    setObjectives(objectives.filter((item) => item !== objective));
+    setObjectives((prev) =>
+      prev.filter((item) => item !== objective)
+    );
   };
+
+  // ==========================================
+  // TECHNOLOGIES
+  // ==========================================
 
   const addTechnology = () => {
     const value = technologyInput.trim();
@@ -104,32 +169,20 @@ export default function CreateProject() {
     }
 
     clearMessages();
-    setTechnologies([...technologies, value]);
+
+    setTechnologies((prev) => [...prev, value]);
     setTechnologyInput("");
   };
 
   const removeTechnology = (technology) => {
-    setTechnologies(technologies.filter((item) => item !== technology));
+    setTechnologies((prev) =>
+      prev.filter((item) => item !== technology)
+    );
   };
 
-  const addMember = () => {
-    const value = memberInput.trim();
-
-    if (!value) return;
-
-    if (teamMembers.includes(value)) {
-      setErrorMessage("This team member is already added");
-      return;
-    }
-
-    clearMessages();
-    setTeamMembers([...teamMembers, value]);
-    setMemberInput("");
-  };
-
-  const removeMember = (member) => {
-    setTeamMembers(teamMembers.filter((item) => item !== member));
-  };
+  // ==========================================
+  // FILE
+  // ==========================================
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -140,13 +193,17 @@ export default function CreateProject() {
     clearMessages();
   };
 
+  // ==========================================
+  // VALIDATE PROJECT
+  // ==========================================
+
   const validateProject = () => {
     if (!projectTitle.trim()) {
       setErrorMessage("Please enter the project title");
       return false;
     }
 
-    if (!domain) {
+    if (!domain.trim()) {
       setErrorMessage("Please select a project domain");
       return false;
     }
@@ -162,73 +219,139 @@ export default function CreateProject() {
     }
 
     if (objectives.length === 0) {
-      setErrorMessage("Please add at least one project objective");
+      setErrorMessage(
+        "Please add at least one project objective"
+      );
       return false;
     }
 
     if (technologies.length === 0) {
-      setErrorMessage("Please add at least one technology");
+      setErrorMessage(
+        "Please add at least one technology"
+      );
       return false;
     }
 
-    if (teamMembers.length === 0) {
-      setErrorMessage("Please add at least one team member");
+    if (!team?._id) {
+      setErrorMessage(
+        "You must create or join a team before creating a project"
+      );
       return false;
     }
 
     return true;
   };
 
-  const createProjectData = (status) => {
-    return {
-      title: projectTitle,
-      domain,
-      problemStatement,
-      objectives,
-      description,
-      technologies,
-      teamMembers,
-      githubUrl,
-      demoUrl,
-      proposalFile: proposalFile?.name || "",
-      status,
-      progressPercentage: 0,
-      currentMilestone: "Proposal",
-    };
-  };
+  // ==========================================
+  // CREATE PROJECT API
+  // ==========================================
 
-  const handleSaveDraft = () => {
+  const submitProjectToAPI = async (status) => {
     clearMessages();
 
-    if (!projectTitle.trim()) {
-      setErrorMessage("Please enter at least a project title to save a draft");
+    if (status === "submitted" && !validateProject()) {
       return;
     }
 
-    const projectData = createProjectData("draft");
+    if (status === "draft" && !projectTitle.trim()) {
+      setErrorMessage(
+        "Please enter at least a project title to save a draft"
+      );
+      return;
+    }
 
-    setCreatedProject(projectData);
+    if (!team?._id) {
+      setErrorMessage(
+        "You must create or join a team before creating a project"
+      );
+      return;
+    }
 
-    setSuccessMessage(
-      "Project draft saved successfully. You can continue editing it later.",
-    );
+    try {
+      setLoading(true);
+
+      // Only fields that exist in Project.js
+      const projectData = {
+        title: projectTitle.trim(),
+        domain: domain.trim(),
+        problemStatement: problemStatement.trim(),
+        objectives,
+        description: description.trim(),
+        technologies,
+        team: team._id,
+        proposalFile: proposalFile?.name || "",
+        githubUrl: githubUrl.trim(),
+        demoUrl: demoUrl.trim(),
+        status,
+        progressPercentage: 0,
+        currentMilestone: "Proposal",
+      };
+
+      console.log("Project data:", projectData);
+
+      const response = await fetch(
+        "http://localhost:5001/api/projects",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(projectData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to create project"
+        );
+      }
+
+      console.log("Project created:", data);
+
+      setCreatedProject(data.project);
+
+      if (status === "draft") {
+        setSuccessMessage(
+          "Project draft saved successfully."
+        );
+      } else {
+        setSuccessMessage(
+          "Project proposal submitted successfully. It is now ready for mentor assignment."
+        );
+      }
+    } catch (error) {
+      console.error("Create project error:", error);
+
+      setErrorMessage(
+        error.message || "Failed to create project"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmitProposal = () => {
-    clearMessages();
+  // ==========================================
+  // SAVE DRAFT
+  // ==========================================
 
-    const isValid = validateProject();
-
-    if (!isValid) return;
-
-    const projectData = createProjectData("submitted");
-
-    setCreatedProject(projectData);
-
-    setSuccessMessage(
-      "Project proposal submitted successfully. It is now ready for mentor assignment.",
-    );
+  const handleSaveDraft = async () => {
+    await submitProjectToAPI("draft");
   };
+
+  // ==========================================
+  // SUBMIT PROPOSAL
+  // ==========================================
+
+  const handleSubmitProposal = async () => {
+    await submitProjectToAPI("submitted");
+  };
+
+  // ==========================================
+  // RESET FORM
+  // ==========================================
 
   const resetProject = () => {
     setProjectTitle("");
@@ -241,9 +364,6 @@ export default function CreateProject() {
 
     setTechnologyInput("");
     setTechnologies([]);
-
-    setMemberInput("");
-    setTeamMembers([]);
 
     setGithubUrl("");
     setDemoUrl("");
@@ -259,12 +379,18 @@ export default function CreateProject() {
     }
   };
 
+  // ==========================================
+  // RENDER
+  // ==========================================
+
   return (
     <div className="space-y-6 pb-10">
       <DashboardHeader
         title="Create New Project"
         description="Set up your project, define objectives, add your team, and submit your proposal."
       />
+
+      {/* WORKFLOW */}
 
       <Card className="overflow-hidden border-primary/20">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -274,20 +400,76 @@ export default function CreateProject() {
             </div>
 
             <div>
-              <h3 className="font-semibold">Project Submission Workflow</h3>
+              <h3 className="font-semibold">
+                Project Submission Workflow
+              </h3>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Create your project, submit the proposal, and wait for the
-                administrator to assign a mentor.
+                Create your project, submit the proposal, and wait
+                for the administrator to assign a mentor.
               </p>
             </div>
           </div>
 
-          <Badge variant="secondary" className="w-fit px-3 py-1.5">
+          <Badge
+            variant="secondary"
+            className="w-fit px-3 py-1.5"
+          >
             Step 1 of 5
           </Badge>
         </CardContent>
       </Card>
+
+      {/* TEAM STATUS */}
+
+      {!loadingTeam && (
+        <Card
+          className={
+            team
+              ? "border-green-500/30"
+              : "border-yellow-500/30"
+          }
+        >
+          <CardContent className="flex items-center gap-4 p-4">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                team
+                  ? "bg-green-100 text-green-600"
+                  : "bg-yellow-100 text-yellow-600"
+              }`}
+            >
+              <Users size={20} />
+            </div>
+
+            <div>
+              {team ? (
+                <>
+                  <p className="font-semibold">
+                    Team: {team.teamName}
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    {team.members?.length || 0} team member
+                    {team.members?.length === 1 ? "" : "s"} added
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold">
+                    No team found
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    Create or join a team before creating a project.
+                  </p>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ERROR */}
 
       {errorMessage && (
         <Card className="border-destructive/40">
@@ -312,6 +494,8 @@ export default function CreateProject() {
           </CardContent>
         </Card>
       )}
+
+      {/* SUCCESS */}
 
       {successMessage && (
         <Card className="border-green-500/40 bg-green-50/50 dark:bg-green-950/10">
@@ -343,6 +527,8 @@ export default function CreateProject() {
         </Card>
       )}
 
+      {/* BASIC INFORMATION */}
+
       <div className="grid gap-6 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
@@ -357,6 +543,8 @@ export default function CreateProject() {
           </CardHeader>
 
           <CardContent className="space-y-5">
+            {/* TITLE */}
+
             <div className="space-y-2">
               <Label>Project Title *</Label>
 
@@ -369,6 +557,8 @@ export default function CreateProject() {
                 }}
               />
             </div>
+
+            {/* DOMAIN */}
 
             <div className="space-y-2">
               <Label>Project Domain *</Label>
@@ -401,9 +591,13 @@ export default function CreateProject() {
                     Machine Learning
                   </SelectItem>
 
-                  <SelectItem value="Data Science">Data Science</SelectItem>
+                  <SelectItem value="Data Science">
+                    Data Science
+                  </SelectItem>
 
-                  <SelectItem value="Cyber Security">Cyber Security</SelectItem>
+                  <SelectItem value="Cyber Security">
+                    Cyber Security
+                  </SelectItem>
 
                   <SelectItem value="Internet of Things">
                     Internet of Things
@@ -413,10 +607,14 @@ export default function CreateProject() {
                     Cloud Computing
                   </SelectItem>
 
-                  <SelectItem value="Other">Other</SelectItem>
+                  <SelectItem value="Other">
+                    Other
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {/* PROBLEM */}
 
             <div className="space-y-2">
               <Label>Problem Statement *</Label>
@@ -432,10 +630,12 @@ export default function CreateProject() {
               />
 
               <p className="text-xs text-muted-foreground">
-                Describe the real-world problem or challenge your project is
-                solving.
+                Describe the real-world problem or challenge your
+                project is solving.
               </p>
             </div>
+
+            {/* DESCRIPTION */}
 
             <div className="space-y-2">
               <Label>Project Description *</Label>
@@ -451,18 +651,22 @@ export default function CreateProject() {
               />
 
               <p className="text-xs text-muted-foreground">
-                Explain what your project does and how the proposed solution
-                works.
+                Explain what your project does and how the proposed
+                solution works.
               </p>
             </div>
           </CardContent>
         </Card>
 
+        {/* SUMMARY */}
+
         <Card className="h-fit xl:sticky xl:top-6">
           <CardHeader>
             <CardTitle>Project Summary</CardTitle>
 
-            <CardDescription>Live overview of your project.</CardDescription>
+            <CardDescription>
+              Live overview of your project.
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-5">
@@ -481,45 +685,72 @@ export default function CreateProject() {
                 Domain
               </p>
 
-              <p className="mt-1 font-semibold">{domain || "Not selected"}</p>
+              <p className="mt-1 font-semibold">
+                {domain || "Not selected"}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl border p-3">
-                <p className="text-xs text-muted-foreground">Objectives</p>
+                <p className="text-xs text-muted-foreground">
+                  Objectives
+                </p>
 
-                <p className="mt-1 text-2xl font-bold">{objectives.length}</p>
+                <p className="mt-1 text-2xl font-bold">
+                  {objectives.length}
+                </p>
               </div>
 
               <div className="rounded-xl border p-3">
-                <p className="text-xs text-muted-foreground">Technologies</p>
+                <p className="text-xs text-muted-foreground">
+                  Technologies
+                </p>
 
-                <p className="mt-1 text-2xl font-bold">{technologies.length}</p>
+                <p className="mt-1 text-2xl font-bold">
+                  {technologies.length}
+                </p>
               </div>
 
               <div className="rounded-xl border p-3">
-                <p className="text-xs text-muted-foreground">Team Members</p>
+                <p className="text-xs text-muted-foreground">
+                  Team Members
+                </p>
 
-                <p className="mt-1 text-2xl font-bold">{teamMembers.length}</p>
+                <p className="mt-1 text-2xl font-bold">
+                  {team?.members?.length || 0}
+                </p>
               </div>
 
               <div className="rounded-xl border p-3">
-                <p className="text-xs text-muted-foreground">Progress</p>
+                <p className="text-xs text-muted-foreground">
+                  Progress
+                </p>
 
-                <p className="mt-1 text-2xl font-bold">0%</p>
+                <p className="mt-1 text-2xl font-bold">
+                  0%
+                </p>
               </div>
             </div>
 
             <div className="rounded-xl bg-muted p-4">
-              <p className="text-sm font-medium">Current Status</p>
+              <p className="text-sm font-medium">
+                Current Status
+              </p>
 
-              <Badge variant="secondary" className="mt-2">
-                Draft
+              <Badge
+                variant="secondary"
+                className="mt-2"
+              >
+                {createdProject?.status === "submitted"
+                  ? "Submitted"
+                  : "Draft"}
               </Badge>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* OBJECTIVES */}
 
       <Card>
         <CardHeader>
@@ -538,7 +769,9 @@ export default function CreateProject() {
             <Input
               placeholder="Example: Build a centralized system for project monitoring"
               value={objectiveInput}
-              onChange={(e) => setObjectiveInput(e.target.value)}
+              onChange={(e) =>
+                setObjectiveInput(e.target.value)
+              }
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -547,7 +780,10 @@ export default function CreateProject() {
               }}
             />
 
-            <Button type="button" onClick={addObjective}>
+            <Button
+              type="button"
+              onClick={addObjective}
+            >
               <Plus size={18} />
               Add Objective
             </Button>
@@ -565,13 +801,17 @@ export default function CreateProject() {
                       {index + 1}
                     </div>
 
-                    <p className="text-sm font-medium">{objective}</p>
+                    <p className="text-sm font-medium">
+                      {objective}
+                    </p>
                   </div>
 
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeObjective(objective)}
+                    onClick={() =>
+                      removeObjective(objective)
+                    }
                   >
                     <Trash2 size={17} />
                   </Button>
@@ -580,7 +820,10 @@ export default function CreateProject() {
             </div>
           ) : (
             <div className="rounded-xl border border-dashed p-8 text-center">
-              <Target size={28} className="mx-auto text-muted-foreground" />
+              <Target
+                size={28}
+                className="mx-auto text-muted-foreground"
+              />
 
               <p className="mt-3 text-sm text-muted-foreground">
                 No objectives added yet.
@@ -590,6 +833,8 @@ export default function CreateProject() {
         </CardContent>
       </Card>
 
+      {/* TECHNOLOGY */}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -598,8 +843,8 @@ export default function CreateProject() {
           </CardTitle>
 
           <CardDescription>
-            Add the technologies, frameworks, and tools planned for your
-            project.
+            Add the technologies, frameworks, and tools planned for
+            your project.
           </CardDescription>
         </CardHeader>
 
@@ -608,7 +853,9 @@ export default function CreateProject() {
             <Input
               placeholder="Example: React, Node.js, MongoDB"
               value={technologyInput}
-              onChange={(e) => setTechnologyInput(e.target.value)}
+              onChange={(e) =>
+                setTechnologyInput(e.target.value)
+              }
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -617,7 +864,10 @@ export default function CreateProject() {
               }}
             />
 
-            <Button type="button" onClick={addTechnology}>
+            <Button
+              type="button"
+              onClick={addTechnology}
+            >
               <Plus size={18} />
               Add Technology
             </Button>
@@ -635,7 +885,9 @@ export default function CreateProject() {
 
                   <button
                     type="button"
-                    onClick={() => removeTechnology(technology)}
+                    onClick={() =>
+                      removeTechnology(technology)
+                    }
                     className="cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100"
                   >
                     <X size={14} />
@@ -651,6 +903,8 @@ export default function CreateProject() {
         </CardContent>
       </Card>
 
+      {/* TEAM */}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -659,68 +913,65 @@ export default function CreateProject() {
           </CardTitle>
 
           <CardDescription>
-            Add the students who are working together on this project.
+            Your team members are loaded automatically from your
+            current team.
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Input
-              placeholder="Enter team member name"
-              value={memberInput}
-              onChange={(e) => setMemberInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addMember();
-                }
-              }}
-            />
-
-            <Button type="button" onClick={addMember}>
-              <Plus size={18} />
-              Add Member
-            </Button>
-          </div>
-
-          {teamMembers.length > 0 ? (
+        <CardContent>
+          {loadingTeam ? (
+            <div className="rounded-xl border border-dashed p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                Loading your team...
+              </p>
+            </div>
+          ) : team?.members?.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {teamMembers.map((member) => (
+              {team.members.map((member) => (
                 <div
-                  key={member}
-                  className="flex items-center justify-between rounded-xl border p-4"
+                  key={member._id}
+                  className="flex items-center rounded-xl border p-4"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
-                      {member.charAt(0).toUpperCase()}
+                      {member.name
+                        ?.charAt(0)
+                        .toUpperCase() || "U"}
                     </div>
 
-                    <p className="truncate font-medium">{member}</p>
-                  </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">
+                        {member.name}
+                      </p>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeMember(member)}
-                  >
-                    <Trash2 size={17} />
-                  </Button>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {member.email}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="rounded-xl border border-dashed p-8 text-center">
-              <Users size={28} className="mx-auto text-muted-foreground" />
+              <Users
+                size={28}
+                className="mx-auto text-muted-foreground"
+              />
 
               <p className="mt-3 text-sm text-muted-foreground">
-                No team members added yet.
+                No team members found.
               </p>
             </div>
           )}
         </CardContent>
       </Card>
 
+      {/* LINKS + PROPOSAL */}
+
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* LINKS */}
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -734,6 +985,8 @@ export default function CreateProject() {
           </CardHeader>
 
           <CardContent className="space-y-5">
+            {/* GITHUB */}
+
             <div className="space-y-2">
               <Label>GitHub Repository URL</Label>
 
@@ -747,10 +1000,14 @@ export default function CreateProject() {
                   className="pl-10"
                   placeholder="https://github.com/username/project"
                   value={githubUrl}
-                  onChange={(e) => setGithubUrl(e.target.value)}
+                  onChange={(e) =>
+                    setGithubUrl(e.target.value)
+                  }
                 />
               </div>
             </div>
+
+            {/* DEMO */}
 
             <div className="space-y-2">
               <Label>Demo URL</Label>
@@ -765,12 +1022,16 @@ export default function CreateProject() {
                   className="pl-10"
                   placeholder="https://your-project-demo.com"
                   value={demoUrl}
-                  onChange={(e) => setDemoUrl(e.target.value)}
+                  onChange={(e) =>
+                    setDemoUrl(e.target.value)
+                  }
                 />
               </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* PROPOSAL */}
 
         <Card>
           <CardHeader>
@@ -806,7 +1067,10 @@ export default function CreateProject() {
                     </p>
 
                     <p className="text-xs text-muted-foreground">
-                      {(proposalFile.size / 1024 / 1024).toFixed(2)} MB
+                      {(proposalFile.size / 1024 / 1024).toFixed(
+                        2
+                      )}{" "}
+                      MB
                     </p>
                   </div>
                 </div>
@@ -828,14 +1092,18 @@ export default function CreateProject() {
             ) : (
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() =>
+                  fileInputRef.current?.click()
+                }
                 className="flex w-full flex-col items-center justify-center rounded-xl border border-dashed p-8 transition-colors hover:bg-muted/50"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
                   <Upload size={22} />
                 </div>
 
-                <p className="mt-4 font-medium">Upload Proposal Document</p>
+                <p className="mt-4 font-medium">
+                  Upload Proposal Document
+                </p>
 
                 <p className="mt-1 text-sm text-muted-foreground">
                   PDF, DOC or DOCX
@@ -846,11 +1114,16 @@ export default function CreateProject() {
         </Card>
       </div>
 
+      {/* CREATED PROJECT */}
+
       {createdProject && (
         <Card className="border-primary/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CheckCircle2 size={20} className="text-primary" />
+              <CheckCircle2
+                size={20}
+                className="text-primary"
+              />
               Project Ready
             </CardTitle>
 
@@ -861,16 +1134,22 @@ export default function CreateProject() {
 
           <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold">{createdProject.title}</p>
+              <p className="font-semibold">
+                {createdProject.title}
+              </p>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Current milestone: Proposal
+                Current milestone:{" "}
+                {createdProject.currentMilestone ||
+                  "Proposal"}
               </p>
             </div>
 
             <Badge
               variant={
-                createdProject.status === "submitted" ? "default" : "secondary"
+                createdProject.status === "submitted"
+                  ? "default"
+                  : "secondary"
               }
               className="w-fit px-3 py-1.5"
             >
@@ -882,20 +1161,35 @@ export default function CreateProject() {
         </Card>
       )}
 
+      {/* ACTIONS */}
+
       <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="ghost" onClick={resetProject}>
+        <Button
+          variant="ghost"
+          onClick={resetProject}
+          disabled={loading}
+        >
           Reset Form
         </Button>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button variant="outline" onClick={handleSaveDraft}>
+          <Button
+            variant="outline"
+            onClick={handleSaveDraft}
+            disabled={loading}
+          >
             <Save size={18} />
-            Save as Draft
+
+            {loading ? "Saving..." : "Save as Draft"}
           </Button>
 
-          <Button onClick={handleSubmitProposal}>
+          <Button
+            onClick={handleSubmitProposal}
+            disabled={loading}
+          >
             <Send size={18} />
-            Submit Proposal
+
+            {loading ? "Submitting..." : "Submit Proposal"}
           </Button>
         </div>
       </div>
