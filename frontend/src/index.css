@@ -1,111 +1,123 @@
+@import "tailwindcss";
+
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --font-size-root: 16px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --d-navbar-logo: 18px;
+  --d-navbar-links: 14px;
+  --d-navbar-btn: 14px;
+  --d-h1: 48px;
+  --d-h2: 32px;
+  --d-h3: 20px;
+  --d-body: 16px;
+  --d-form-label: 14px;
+  --d-form-input: 14px;
+  --d-form-placeholder: 14px;
+  --d-form-error: 12px;
+  --d-btn: 14px;
+  --d-card-title: 18px;
+  --d-card-desc: 14px;
+  --d-footer-heading: 14px;
+  --d-footer-links: 14px;
+  --d-footer-legal: 12px;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (max-width: 1023px) and (min-width: 768px) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+    --t-navbar-logo: 18px;
+    --t-navbar-links: 14px;
+    --t-navbar-btn: 14px;
+    --t-h1: 36px;
+    --t-h2: 28px;
+    --t-h3: 18px;
+    --t-body: 16px;
+    --t-form-label: 14px;
+    --t-form-input: 16px;
+    --t-form-placeholder: 16px;
+    --t-form-error: 12px;
+    --t-btn: 14px;
+    --t-card-title: 18px;
+    --t-card-desc: 14px;
+    --t-footer-heading: 14px;
+    --t-footer-links: 14px;
+    --t-footer-legal: 12px;
   }
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+@media (max-width: 767px) {
+  :root {
+    --m-navbar-logo: 16px;
+    --m-navbar-links: 14px;
+    --m-navbar-btn: 14px;
+    --m-h1: 32px;
+    --m-h2: 24px;
+    --m-h3: 18px;
+    --m-body: 16px;
+    --m-form-label: 14px;
+    --m-form-input: 16px;
+    --m-form-placeholder: 16px;
+    --m-form-error: 12px;
+    --m-btn: 14px;
+    --m-card-title: 16px;
+    --m-card-desc: 14px;
+    --m-footer-heading: 14px;
+    --m-footer-links: 14px;
+    --m-footer-legal: 12px;
   }
 }
-p {
-  margin: 0;
-}
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+@theme {
+  --text-saas-root: 16px;
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  --text-d-nav-logo: 18px;
+  --text-d-nav-links: 14px;
+  --text-d-nav-btn: 14px;
+  --text-d-h1: 48px;
+  --text-d-h2: 32px;
+  --text-d-h3: 20px;
+  --text-d-body: 16px;
+  --text-d-label: 14px;
+  --text-d-input: 14px;
+  --text-d-error: 12px;
+  --text-d-btn: 14px;
+  --text-d-card-title: 18px;
+  --text-d-card-desc: 14px;
+  --text-d-footer-heading: 14px;
+  --text-d-footer-links: 14px;
+  --text-d-footer-legal: 12px;
+
+  --text-t-nav-logo: 18px;
+  --text-t-nav-links: 14px;
+  --text-t-nav-btn: 14px;
+  --text-t-h1: 36px;
+  --text-t-h2: 28px;
+  --text-t-h3: 18px;
+  --text-t-body: 16px;
+  --text-t-label: 14px;
+  --text-t-input: 16px;
+  --text-t-error: 12px;
+  --text-t-btn: 14px;
+  --text-t-card-title: 18px;
+  --text-t-card-desc: 14px;
+  --text-t-footer-heading: 14px;
+  --text-t-footer-links: 14px;
+  --text-t-footer-legal: 12px;
+
+  --text-m-nav-logo: 16px;
+  --text-m-nav-links: 14px;
+  --text-m-nav-btn: 14px;
+  --text-m-h1: 32px;
+  --text-m-h2: 24px;
+  --text-m-h3: 18px;
+  --text-m-body: 16px;
+  --text-m-label: 14px;
+  --text-m-input: 16px;
+  --text-m-error: 12px;
+  --text-m-btn: 14px;
+  --text-m-card-title: 16px;
+  --text-m-card-desc: 14px;
+  --text-m-footer-heading: 14px;
+  --text-m-footer-links: 14px;
+  --text-m-footer-legal: 12px;
 }
